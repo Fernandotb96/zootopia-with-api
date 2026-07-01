@@ -1,7 +1,4 @@
-import requests
-
-URL_API = "https://api.api-ninjas.com/v1/animals"
-API_KEY = 'qxnYeyzdqUCF16UH1BUTYugjvZvw9EmOAEo048O6'
+import data_fetcher
 
 
 def ask_animal():
@@ -12,21 +9,6 @@ def ask_animal():
             print("Please enter a valid name.")
         else:
             return animal_user
-
-
-def load_data(animal_user):
-    """Fetch animal data from the Animals API."""
-    headers = {"X-Api-Key": API_KEY}
-    params = {"name": animal_user}
-    try:
-        response = requests.get(URL_API, headers=headers, params=params)
-        animals_data = response.json()
-        if not animals_data:
-            print(f"No animals found for '{animal_user}'.")
-        return animals_data
-    except Exception as e:
-        print(f"Error connecting to the API: {e}")
-        return []
 
 
 def serialize_animal(animal):
@@ -87,7 +69,7 @@ def main():
     It prompts the user for an animal, fetches its data from the Animal API,
     and generates an HTML page with the animal data based on a template."""
     animal_choice = ask_animal()
-    animals_data = load_data(animal_choice)
+    animals_data = data_fetcher.fetch_data(animal_choice)
     if not animals_data:
         animals_html_text = f"<h2>The animal '{animal_choice}' doesn't exist.</h2>"
     else:
