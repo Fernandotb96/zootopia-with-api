@@ -5,7 +5,7 @@ API_KEY = 'qxnYeyzdqUCF16UH1BUTYugjvZvw9EmOAEo048O6'
 
 
 def ask_animal():
-    """Ask user for animal's name and handle empty inputs."""
+    """Ask the user to enter an animal name and handle empty inputs."""
     while True:
         animal_user = input("Enter a name of an animal: ").strip()
         if not animal_user:
@@ -14,8 +14,8 @@ def ask_animal():
             return animal_user
 
 
-def load_data(animal_user=None):
-    """Fetch animal data from the 'Animals' API based on the given name."""
+def load_data(animal_user):
+    """Fetch animal data from the Animals API."""
     headers = {"X-Api-Key": API_KEY}
     params = {"name": animal_user}
     try:
@@ -30,7 +30,7 @@ def load_data(animal_user=None):
 
 
 def serialize_animal(animal):
-    """ Serializes the animal's info into an HTML <li> block."""
+    """Serialize an animal's data into an HTML list item block."""
     name = animal.get("name", "No data")
     taxonomy = animal.get("taxonomy", {})
     characteristics = animal.get("characteristics", {})
@@ -58,37 +58,42 @@ def serialize_animal(animal):
 
 
 def animals_to_html(list_animals):
-    """Transform list of animals into a unique HTML string."""
+    """Transform a list of animal data into a single concatenated HTML string."""
     output = "\n".join(serialize_animal(animal) for animal in list_animals)
     return output
 
 
 def replace_text_html(html_file, new_text):
-    """Replace HTML text with new HTML animal's text and returns the new HTML string."""
-    with open(html_file, "r") as handle:
+    """Replace the placeholder in the template HTML file with the new HTML content."""
+    with open(html_file, "r", encoding="utf-8") as handle:
         html_text = handle.read()
     html_text = html_text.replace("__REPLACE_ANIMALS_INFO__", new_text)
     return html_text
 
 
 def save_text_to_html(html_text):
-    """Ask user for filename and save new HTML text into it."""
-    user_file_name = input("Enter new for the new file that ends in '.html' : ")
-    if user_file_name[-5:] == ".html":
-        with open(user_file_name, "w") as handle:
-            handle.write(html_text)
-        print(f"Website was successfully generated to the file {user_file_name}.")
-    else:
-        print("File not saved.")
+    """Ask the user for a filename and save the HTML content into it."""
+    user_file_name = input("Enter name for the new file: ").strip()
+    if not user_file_name.endswith(".html"):
+        user_file_name += ".html"
+    with open(user_file_name, "w", encoding="utf-8") as handle:
+        handle.write(html_text)
+    print(f"Website was successfully generated to the file '{user_file_name}'.")
 
 
 def main():
+    """Orchestrate the workflow to generate the Zootopia website.
+
+    It prompts the user for an animal, fetches its data from the Animal API,
+    and generates an HTML page with the animal data based on a template."""
     animal_choice = ask_animal()
     animals_data = load_data(animal_choice)
-    animals_html_text = animals_to_html(animals_data)
+    if not animals_data:
+        animals_html_text = f"<h2>The animal '{animal_choice}' doesn't exist.</h2>"
+    else:
+        animals_html_text = animals_to_html(animals_data)
     new_html_text = replace_text_html("animals_template.html", animals_html_text)
-    if animals_data:
-        save_text_to_html(new_html_text)
+    save_text_to_html(new_html_text)
 
 
 if __name__ == "__main__":
