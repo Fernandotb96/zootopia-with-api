@@ -4,24 +4,37 @@ URL_API = "https://api.api-ninjas.com/v1/animals"
 API_KEY = 'qxnYeyzdqUCF16UH1BUTYugjvZvw9EmOAEo048O6'
 
 
-def load_data():
-    """ Ask user to enter the name of an animal and loads the data from the Animals API."""
-    user_input = input("Introduce the name of the animal: ").strip()
-    url = f"{URL_API}?name={user_input}"
-    params = {"X-Api-Key": API_KEY}
-    response = requests.get(url, params=params)
-    animals_data = response.json()
-    if len(animals_data) == 0:
-        print(f"No animals found for {user_input}.")
-    return animals_data
+def ask_animal():
+    """Ask user for animal's name and handle empty inputs."""
+    while True:
+        animal_user = input("Enter a name of an animal: ").strip()
+        if not animal_user:
+            print("Please enter a valid name.")
+        else:
+            return animal_user
+
+
+def load_data(animal_user=None):
+    """Fetch animal data from the 'Animals' API based on the given name."""
+    headers = {"X-Api-Key": API_KEY}
+    params = {"name": animal_user}
+    try:
+        response = requests.get(URL_API, headers=headers, params=params)
+        animals_data = response.json()
+        if not animals_data:
+            print(f"No animals found for '{animal_user}'.")
+        return animals_data
+    except Exception as e:
+        print(f"Error connecting to the API: {e}")
+        return []
 
 
 def serialize_animal(animal):
     """ Serializes the animal's info into an HTML <li> block."""
     scientific_name = animal["taxonomy"].get("scientific_name", "No data")
     animal_class = animal["taxonomy"].get("class", "No data")
-    diet = animal["characteristics"].get("diet", "No data")
     animal_type = animal["characteristics"].get("type", "No data")
+    diet = animal["characteristics"].get("diet", "No data")
     locations_list = animal.get("locations", [])
     location = locations_list[0] if locations_list else "No data"
     output = f"""<li class="cards__item">
@@ -61,13 +74,14 @@ def save_text_to_html(html_text):
     if user_file_name[-5:] == ".html":
         with open(user_file_name, "w") as handle:
             handle.write(html_text)
-        print("File saved successfully.")
+        print(f"Website was successfully generated to the file {user_file_name}.")
     else:
         print("File not saved.")
 
 
 def main():
-    animals_data = load_data()
+    animal_choice = ask_animal()
+    animals_data = load_data(animal_choice)
     animals_html_text = animals_to_html(animals_data)
     new_html_text = replace_text_html("animals_template.html", animals_html_text)
     if animals_data:
