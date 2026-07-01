@@ -31,32 +31,35 @@ def load_data(animal_user=None):
 
 def serialize_animal(animal):
     """ Serializes the animal's info into an HTML <li> block."""
-    scientific_name = animal["taxonomy"].get("scientific_name", "No data")
-    animal_class = animal["taxonomy"].get("class", "No data")
-    animal_type = animal["characteristics"].get("type", "No data")
-    diet = animal["characteristics"].get("diet", "No data")
+    name = animal.get("name", "No data")
+    taxonomy = animal.get("taxonomy", {})
+    characteristics = animal.get("characteristics", {})
     locations_list = animal.get("locations", [])
+
+    scientific_name = taxonomy.get("scientific_name", "No data")
+    animal_class = taxonomy.get("class", "No data")
+    diet = characteristics.get("diet", "No data")
+    animal_type = characteristics.get("type", "No data")
     location = locations_list[0] if locations_list else "No data"
+
     output = f"""<li class="cards__item">
-        <div class="card__title">{animal["name"]}</div>
+        <div class="card__title">{name}</div>
         <div class="card__text">
             <ul class="card__info_list">
                 <li class="card__trait"><strong>Scientific name:</strong> {scientific_name}</li>
                 <li class="card__trait"><strong>Animal class:</strong> {animal_class}</li>
+                <li class='card__trait'><strong>Type:</strong> {animal_type}</li>
                 <li class="card__trait"><strong>Diet:</strong> {diet}</li>
                 <li class="card__trait"><strong>Location:</strong> {location}</li>
+            </ul>
+        </div></li>
         """
-    if animal_type:
-        output += f"<li class='card__trait'><strong>Type:</strong> {animal_type}</li>"
-    output += "</ul></div></li>"
     return output
 
 
 def animals_to_html(list_animals):
     """Transform list of animals into a unique HTML string."""
-    output = ""
-    for animal in list_animals:
-        output += serialize_animal(animal)
+    output = "\n".join(serialize_animal(animal) for animal in list_animals)
     return output
 
 
