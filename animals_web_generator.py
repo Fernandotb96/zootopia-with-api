@@ -1,20 +1,29 @@
-import json
+import requests
+
+URL_API = "https://api.api-ninjas.com/v1/animals"
+API_KEY = 'qxnYeyzdqUCF16UH1BUTYugjvZvw9EmOAEo048O6'
 
 
-def load_data(file_path):
-    """ Loads the animals data from the JSON file."""
-    with open(file_path, "r") as handle:
-        return json.load(handle)
+def load_data():
+    """ Ask user to enter the name of an animal and loads the data from the Animals API."""
+    user_input = input("Introduce the name of the animal: ").strip()
+    url = f"{URL_API}?name={user_input}"
+    params = {"X-Api-Key": API_KEY}
+    response = requests.get(url, params=params)
+    animals_data = response.json()
+    if len(animals_data) == 0:
+        print(f"No animals found for {user_input}.")
+    return animals_data
 
 
 def serialize_animal(animal):
     """ Serializes the animal's info into an HTML <li> block."""
-    scientific_name = animal["taxonomy"].get("scientific_name", None)
-    animal_class = animal["taxonomy"].get("class", None)
-    diet = animal["characteristics"].get("diet", None)
-    animal_type = animal["characteristics"].get("type", None)
+    scientific_name = animal["taxonomy"].get("scientific_name", "No data")
+    animal_class = animal["taxonomy"].get("class", "No data")
+    diet = animal["characteristics"].get("diet", "No data")
+    animal_type = animal["characteristics"].get("type", "No data")
     locations_list = animal.get("locations", [])
-    location = locations_list[0] if locations_list else "Unknown"
+    location = locations_list[0] if locations_list else "No data"
     output = f"""<li class="cards__item">
         <div class="card__title">{animal["name"]}</div>
         <div class="card__text">
@@ -58,10 +67,11 @@ def save_text_to_html(html_text):
 
 
 def main():
-    animals_data = load_data('animals_data.json')
+    animals_data = load_data()
     animals_html_text = animals_to_html(animals_data)
     new_html_text = replace_text_html("animals_template.html", animals_html_text)
-    save_text_to_html(new_html_text)
+    if animals_data:
+        save_text_to_html(new_html_text)
 
 
 if __name__ == "__main__":
